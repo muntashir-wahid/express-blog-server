@@ -23,18 +23,48 @@ async function run() {
   try {
     const blogCollection = client.db("expressBlog").collection("blogs");
 
+    // Create a post
     app.post("/api/v1/blogs", async (req, res) => {
       const body = req.body;
-      console.log(body);
 
       const result = await blogCollection.insertOne(body);
 
-      const blog = Object.assign({ _id: result.insertedId }, body);
+      const blog = Object.assign(body, { _id: result.insertedId });
 
       res.status(201).json({
         status: "success",
         data: {
           blog,
+        },
+      });
+    });
+
+    // Read an user's post
+    app.get("/api/v1/blogs/q", async (req, res) => {
+      const authorEmail = req.query.email;
+      const query = { authorEmail };
+
+      const cursor = blogCollection.find(query);
+      const blogs = await cursor.toArray();
+
+      res.status(200).json({
+        status: "success",
+        data: {
+          blogs,
+        },
+      });
+    });
+
+    // Read all blogs
+
+    app.get("/api/v1/blogs", async (req, res) => {
+      const cursor = blogCollection.find({});
+      const blogs = await cursor.toArray();
+
+      res.status(200).json({
+        status: "success",
+        data: {
+          blogs,
         },
       });
     });
